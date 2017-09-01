@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+  <head>
+    <title>待办事项</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <link rel="stylesheet" href="todo.css">
+
+    <!--[if lt IE 9]>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/es5-shim/4.0.5/es5-shim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script>html5.addElements('todo')</script>
+    <![endif]-->
+
+  </head>
+
+  <body>
+
+    <todo></todo>
+
+    <script src="todo.tag" type="riot/tag"></script>
+    <script src="https://rawgit.com/riot/riot/master/riot%2Bcompiler.min.js"></script>
+
+    <script>
+    riot.mount('todo', {
+      items: [
+        { title: '安防系统前端开发时间评估', createTime: '1504162055934', closeTime: '1504182055999',  done: true },
+        { title: '这是个隐藏项目',  createTime: '1504162300491', closeTime: '', hidden: true },
+        { title: '热力图实现预研', createTime: '1504162300491', closeTime: ''},
+        { title: '拖拽方法编写', createTime: '1504162300491', closeTime: '' }
+      ]
+    })
+    </script>
+
+  </body>
+
+</html>
