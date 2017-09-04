@@ -10,7 +10,7 @@
         </select>
         <input ref="input" onkeyup={ edit }>
         <button disabled={ !text }>增加</button>
-        <button type="button" disabled={ items.filter(onlyDone).length== 0 } onclick={ removeAllDone }>删除</button>
+        <button onclick={search}>搜索</button>
     </form>
 
     <button id="msgBtn" style="display: none;"></button>
@@ -22,11 +22,12 @@
             <span><a onclick={showDone} href="#">已完成</a></span>
         </div>
         <ul>
-            <li each={ whatShow }>
+            <li each={ items.filter(whatShow) }>
                 <div>类型：{filterType(type)}</div>
                 <label class={ completed: done }>
                     <input type="checkbox" checked={ done } onclick={ parent.toggle }> { title }
                     <button type="button" onclick={upTodo}>置顶</button>
+                    <button type="button" onclick={deleteTodo}>删除</button>
                 </label>
                 <div class={ completed: done } style="margin-left: 25px;">
                     预计完成时间： { filterTime(createTime) }
@@ -193,10 +194,17 @@
     add(e)
     {
         if (this.text) {
-            this.items.push({title: this.text, createTime: new Date().getTime(), type: this.type});
+             localStorageUtils.methods.addItem({title: this.text, createTime: new Date().getTime().toString(), type: this.type});
             this.text = this.refs.input.value = '';
         }
         e.preventDefault();
+    }
+
+    search(event)
+    {
+        if(this.text) {
+            localStorageUtils.methods.search(this.text);
+        }
     }
 
     //获取当前时间
@@ -218,11 +226,10 @@
     }
 
     //删除代办事项
-    removeAllDone()
+    deleteTodo(event)
     {
-        this.items = this.items.filter(function (item) {
-            return !item.done
-        })
+        var item = event.item;
+        localStorageUtils.methods.deleteItem(item.id);
     }
 
     //过滤是否显示
