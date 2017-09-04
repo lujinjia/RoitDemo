@@ -1,104 +1,257 @@
-
 <todo class="todoContent">
 
-  <h3>{ getCurrentDate()} 代办事项</h3>
+    <h3>{ getCurrentDate()} 待办事项</h3>
 
-  <form onsubmit={ add }>
+    <form onsubmit={ add }>
+        <select name="待办类型" id="todoType">
+            <option value="0" selected>工作</option>
+            <option value="1">生活</option>
+            <option value="2">自我提高</option>
+        </select>
+        <input ref="input" onkeyup={ edit }>
+        <button disabled={ !text }>增加</button>
+        <button type="button" disabled={ items.filter(onlyDone).length== 0 } onclick={ removeAllDone }>删除</button>
+    </form>
 
-    <input ref="input" onkeyup={ edit }>
+    <button id="msgBtn" style="display: none;"></button>
 
-    <button disabled={ !text }>
-        增加
-    </button>
+    <div>
+        <div>
+            <span><a onclick={showAll} href="#">全部事项</a></span>
+            <span><a onclick={showUndo} href="#">待办</a></span>
+            <span><a onclick={showDone} href="#">已完成</a></span>
+        </div>
+        <ul>
+            <li each={ whatShow }>
+                <div>类型：{filterType(type)}</div>
+                <label class={ completed: done }>
+                    <input type="checkbox" checked={ done } onclick={ parent.toggle }> { title }
+                    <button type="button" onclick={upTodo}>置顶</button>
+                </label>
+                <div class={ completed: done } style="margin-left: 25px;">
+                    预计完成时间： { filterTime(createTime) }
+                </div>
+                <div class={ completed: done } style="margin-left: 25px;">
+                    实际完成时间： { filterTime(closeTime) }
+                </div>
 
+            </li>
+        </ul>
+    </div>
 
-    <button type="button" disabled={ items.filter(onlyDone).length == 0 } onclick={ removeAllDone }>
-      删除
-    </button>
-
-  </form>
-
-  <ul>
-    <li each={ items.filter(whatShow) }>
-      <label class={ completed: done }>
-        <input type="checkbox" checked={ done } onclick={ parent.toggle }> { title }
-      </label>
-      <div class={ completed: done } style="margin-left: 25px;">
-          创建时间： { filterTime(createTime) }
-      </div>
-      <div class={ completed: done } style="margin-left: 25px;">
-          完成时间： { filterTime(closeTime) }
-      </div>
-    </li>
-  </ul>
 
 <!-- this script tag is optional -->
 <script>
 
-  //opts是父级传递的参数
-  this.items = opts.items;
+    //opts是父级传递的参数
+    this.items = opts.items;
+    this.todoStatus = false;
+    var that = this;
 
-  //输入框响应事件
-  edit(e) {
-    this.text = e.target.value;
-  }
+    this.on('mount', function() {
+        //获取chrome桌面通知权限
 
-  //增加代办事项
-  add(e) {
-    if (this.text) {
-      this.items.push({ title: this.text, createTime: new Date().getTime() });
-      this.text = this.refs.input.value = '';
+        if(Notification && Notification !== 'granted') {
+            Notification.requestPermission(function(status){
+                if(Notification.permission !== status) {
+                    Notification.permission = status;
+                }
+            });
+        }
+
+
+        var button = document.getElementById('msgBtn');
+
+        button.addEventListener('click', function() {
+
+            var item = that.todoItem;
+
+            var options = {
+                dir: 'ltr',
+                lang: 'utf-8',
+                icon: 'http://img.zcool.cn/community/01c14556186e1e32f8755701c6b9a8.gif',
+                body: '任务内容：' + item.title + '\n' + '任务截止时间：' + that.transTimeStamp(item.createTime)
+            };
+
+            if(Notification && Notification.permission === 'granted') {
+
+                var n = new Notification('任务到期提醒', options);
+                n.onshow = function(){
+                    item.hasCheck = true;
+                };
+                n.onclick = function(){
+                    //跳转到待办事项中，通过URI路径
+                    //window.href = '';
+                }
+            }
+        });
+
+        //每隔10秒检测是否有任务即将结束，如果是，则发送桌面通知
+        setInterval(function(){
+
+            //待办事项提醒
+            that.items.map(function(item, value){
+                if((new Date().getTime() - item.createTime < 100000) && !(item.hasCheck)) {
+                    that.todoItem = item;
+                    document.getElementById('msgBtn').click();
+                }
+            });
+
+            //上下班以及午休提醒
+            var t1 = new Date();
+            var t2 = t1.getHours() + '' + t1.getMinutes();
+
+            if(t2 === '180' || t2 === '90'|| t2 === '133' || t2 === '120') {
+                var msgItem = {
+                    createTime: new Date().getTime(),
+                    title : ''
+                };
+                if(t2 === '180') {
+                    msgItem.title = '下班';
+                } else if(t2 === '90') {
+                    msgItem.title = '早上上班';
+                } else if(t2 === '120') {
+                    msgItem.title = '吃饭';
+                } else if (t2 === '133') {
+                    msgItem.title = '下午上班';
+                }
+                that.todoItem = msgItem;
+                document.getElementById('msgBtn').click();
+            }
+
+        }, 5000)
+    });
+
+
+
+    transTimeStamp(timeStamp)
+    {
+        var date = new Date(timeStamp);
+        Y = date.getFullYear() + '-';
+        M =  date.getMonth()+1 + '-';
+        D = date.getDate() + ' ';
+        h = date.getHours()+1 < 10 ? '0'+(date.getHours()) + ':': date.getHours() + ':';
+        m = date.getMinutes()+1 < 10 ? '0'+(date.getMinutes()): date.getMinutes();
+        return  Y+M+D+h+m;
     }
-    e.preventDefault();
-  }
 
-  //获取当前时间
-  getCurrentDate() {
-      return new Date().toLocaleDateString();
-  }
-
-  filterTime(time) {
-      if(time) {
-        var date = new Date(parseInt(time));
-        var showTime = date.toLocaleDateString() + date.toLocaleTimeString();
-        return showTime;
-      } else {
-        return '尚未完成';
-      }
-
-  }
-
-  //删除代办事项
-  removeAllDone(e) {
-    this.items = this.items.filter(function(item) {
-      return !item.done
-    })
-  }
-
-  //过滤是否显示
-  whatShow(item) {
-    return !item.hidden
-  }
-
-  //是否完成
-  onlyDone(item) {
-    return item.done
-  }
-
-  //代办事项点击事件
-  toggle(e) {
-    var item = e.item;
-    if(item.done) {
-
-      item.closeTime = '';
-
-    } else {
-      item.closeTime = new Date().getTime().toString();
+    showAll()
+    {
+        this.items = opts.items;
     }
 
-    item.done = !item.done
-    return true
-  }
+    //已完成、未完成、全部事项标签显示控制
+    showUndo()
+    {
+        this.items = opts.items;
+        this.items = this.items.filter(function(value){
+            return !(value.done);
+        });
+    }
+
+    showDone()
+    {
+        this.items = opts.items;
+        this.items = this.items.filter(function(value){
+            return value.done;
+        });
+    }
+
+    filterType(type)
+    {
+        if(type === '1') {
+            return '生活';
+        } else if(type === '0'){
+            return '工作';
+        } else {
+            return '自我提高';
+        }
+    }
+
+
+    //置顶待办事项
+    upTodo(event)
+    {
+        var item = event.item;
+        var that = this;
+        this.items.map(function (data, index) {
+            if (data.id === item.id) {
+                that.items.splice(index, 1);
+                that.items.unshift(item);
+            }
+        });
+    }
+
+    //输入框响应事件
+    edit(e)
+    {
+        this.text = e.target.value;
+        this.type = document.getElementById('todoType').value;
+    }
+
+    //增加代办事项
+    add(e)
+    {
+        if (this.text) {
+            this.items.push({title: this.text, createTime: new Date().getTime(), type: this.type});
+            this.text = this.refs.input.value = '';
+        }
+        e.preventDefault();
+    }
+
+    //获取当前时间
+    getCurrentDate()
+    {
+        return new Date().toLocaleDateString();
+    }
+
+    filterTime(time)
+    {
+        if (time) {
+            var date = new Date(parseInt(time));
+            var showTime = date.toLocaleDateString() + date.toLocaleTimeString();
+            return showTime;
+        } else {
+            return '尚未完成';
+        }
+
+    }
+
+    //删除代办事项
+    removeAllDone()
+    {
+        this.items = this.items.filter(function (item) {
+            return !item.done
+        })
+    }
+
+    //过滤是否显示
+    whatShow(item)
+    {
+        return !item.hidden
+    }
+
+    //是否完成
+    onlyDone(item)
+    {
+        return item.done
+    }
+
+    //代办事项点击事件
+    toggle(e)
+    {
+        var item = e.item;
+        if (item.done) {
+
+            item.closeTime = '';
+
+        } else {
+            item.closeTime = new Date().getTime().toString();
+        }
+
+        item.done = !item.done
+        return true
+    }
 
 </script>
 

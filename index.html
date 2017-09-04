@@ -23,14 +23,19 @@
     <script src="https://rawgit.com/riot/riot/master/riot%2Bcompiler.min.js"></script>
 
     <script>
-    riot.mount('todo', {
-      items: [
-        { title: '安防系统前端开发时间评估', createTime: '1504162055934', closeTime: '1504182055999',  done: true },
-        { title: '这是个隐藏项目',  createTime: '1504162300491', closeTime: '', hidden: true },
-        { title: '热力图实现预研', createTime: '1504162300491', closeTime: ''},
-        { title: '拖拽方法编写', createTime: '1504162300491', closeTime: '' }
-      ]
-    })
+        riot.mount('todo', {
+          items: [
+            { id: '1', title: '项目一', createTime: '1504162055934', type: '1', closeTime: '1504182055999',  done: true },
+            { id: '2', title: '项目二',  createTime: '1504162300491', type: '0', closeTime: '', done: false },
+            { id: '3', title: '项目三', createTime: '1504162300491', type: '0', closeTime: '', done: false},
+            { id: '4', title: '项目四', createTime: '1504162300491', type: '2', closeTime: '', done: false },
+            { id: '5', title: '早上上班', createTime: '1504162300491', type: '3', closeTime: '', hidden: true },
+            { id: '6', title: '晚上下班', createTime: '1504162300491', type: '3', closeTime: '', hidden: true },
+            { id: '7', title: '中午吃饭', createTime: '1504162300491', type: '3', closeTime: '', hidden: true },
+            { id: '8', title: '下午上班', createTime: '1504162300491', type: '3', closeTime: '', hidden: true }
+          ]
+        });
+
     </script>
 
   </body>

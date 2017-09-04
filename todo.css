@@ -60,6 +60,10 @@ li {
   color: #ccc;
 }
 
+.todoTypeClass {
+  color: blue;
+}
+
 label {
   cursor: pointer;
 }
