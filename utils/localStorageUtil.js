@@ -5,17 +5,22 @@
 
 const localStorageUtils =  {
     data : {
-        DATA: ''
+        DATA: []
     },
 
     methods: {
 
         init(key) {
-            this.DATA = JSON.parse(localStorage.getItem(key));
+            var data = JSON.parse(localStorage.getItem(key));
+            if(data.length) {
+                this.DATA = data;
+            } else {
+                this.DATA = [];
+            }
             return this.DATA;
         },
 
-        //
+        //mips
         search() {
 
         },
@@ -43,7 +48,12 @@ const localStorageUtils =  {
 
         //localStorage增加对象
         addItem(data) {
-            data.id = (this.DATA.length + 1).toString();
+
+            var length = 0;
+            if(this.DATA.length > 1) {
+              length = this.DATA.length;
+            }
+            data.id = (length + 1).toString();
             this.DATA.push(data);
             this.update();
         },

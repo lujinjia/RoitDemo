@@ -4,11 +4,12 @@
 
     <form onsubmit={ add }>
         <select name="待办类型" id="todoType">
-            <option value="0" selected>工作</option>
+            <option value="0" selected >工作</option>
             <option value="1">生活</option>
             <option value="2">自我提高</option>
         </select>
         <input ref="input" onkeyup={ edit }>
+        <input ref="time" type="time" blur={ editDate }>
         <button disabled={ !text }>增加</button>
         <button onclick={search}>搜索</button>
     </form>
@@ -17,9 +18,9 @@
 
     <div>
         <div>
-            <span><a onclick={showAll} href="#">全部事项</a></span>
-            <span><a onclick={showUndo} href="#">待办</a></span>
-            <span><a onclick={showDone} href="#">已完成</a></span>
+            <span><a onclick={showAll} href="#" class="todoItem">全部事项</a></span>
+            <span><a onclick={showUndo} href="#" class="todoItem">待办</a></span>
+            <span><a onclick={showDone} href="#" class="todoItem">已完成</a></span>
         </div>
         <ul>
             <li each={ items.filter(whatShow) }>
@@ -30,10 +31,10 @@
                     <button type="button" onclick={deleteTodo}>删除</button>
                 </label>
                 <div class={ completed: done } style="margin-left: 25px;">
-                    预计完成时间： { filterTime(createTime) }
+                    预计完成时间： { filterTime(wishTime) }
                 </div>
                 <div class={ completed: done } style="margin-left: 25px;">
-                    实际完成时间： { filterTime(closeTime) }
+                    实际完成时间： { filterTime(actualTime) }
                 </div>
 
             </li>
@@ -71,7 +72,7 @@
                 dir: 'ltr',
                 lang: 'utf-8',
                 icon: 'http://img.zcool.cn/community/01c14556186e1e32f8755701c6b9a8.gif',
-                body: '任务内容：' + item.title + '\n' + '任务截止时间：' + that.transTimeStamp(item.createTime)
+                body: '任务内容：' + item.title + '\n' + '任务截止时间：' + that.transTimeStamp(item.wishTime)
             };
 
             if(Notification && Notification.permission === 'granted') {
@@ -91,34 +92,12 @@
         setInterval(function(){
 
             //待办事项提醒
-            that.items.map(function(item, value){
-                if((new Date().getTime() - item.createTime < 100000) && !(item.hasCheck)) {
+            that.items.map(function(item){
+                if((item.wishTime - new Date().getTime()< 1800000) && !(item.hasCheck)) {
                     that.todoItem = item;
                     document.getElementById('msgBtn').click();
                 }
             });
-
-            //上下班以及午休提醒
-            var t1 = new Date();
-            var t2 = t1.getHours() + '' + t1.getMinutes();
-
-            if(t2 === '180' || t2 === '90'|| t2 === '133' || t2 === '120') {
-                var msgItem = {
-                    createTime: new Date().getTime(),
-                    title : ''
-                };
-                if(t2 === '180') {
-                    msgItem.title = '下班';
-                } else if(t2 === '90') {
-                    msgItem.title = '早上上班';
-                } else if(t2 === '120') {
-                    msgItem.title = '吃饭';
-                } else if (t2 === '133') {
-                    msgItem.title = '下午上班';
-                }
-                that.todoItem = msgItem;
-                document.getElementById('msgBtn').click();
-            }
 
         }, 5000)
     });
@@ -133,7 +112,8 @@
         D = date.getDate() + ' ';
         h = date.getHours()+1 < 10 ? '0'+(date.getHours()) + ':': date.getHours() + ':';
         m = date.getMinutes()+1 < 10 ? '0'+(date.getMinutes()): date.getMinutes();
-        return  Y+M+D+h+m;
+        var time = Y+M+D+h+m;
+        return time;
     }
 
     showAll()
@@ -190,16 +170,26 @@
         this.type = document.getElementById('todoType').value;
     }
 
+    editDate(e)
+    {
+
+        debugger
+        this.time = e.target.value;
+    }
+
     //增加代办事项
     add(e)
     {
         if (this.text) {
-             localStorageUtils.methods.addItem({title: this.text, createTime: new Date().getTime().toString(), type: this.type});
+            if(!this.time) {
+                this.time = new Date().getTime() + 3600000;
+            }
+            localStorageUtils.methods.addItem({title: this.text, wishTime: this.time, type: this.type});
             this.text = this.refs.input.value = '';
+            this.time = this.refs.time.value = '';
         }
         e.preventDefault();
     }
-
     search(event)
     {
         if(this.text) {
@@ -249,11 +239,7 @@
     {
         var item = e.item;
         if (item.done) {
-
-            item.closeTime = '';
-
-        } else {
-            item.closeTime = new Date().getTime().toString();
+            item.actualTime = new Date().getTime();
         }
 
         item.done = !item.done
