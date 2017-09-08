@@ -46,16 +46,15 @@ const localStorageUtils =  {
             });
         },
 
-        //根据key删除值
-        deleteItem(key) {
-
-            var index = this.getIndex(key);
-            this.DATA.splice(index-1, 1);
+        //根据index删除值
+        deleteItem(index) {
+            this.DATA.splice(index, 1);
             this.update();
 
         },
 
         getIndex(key) {
+
             var itemIndex;
 
            this.DATA.map((data, index)=>{
@@ -63,7 +62,9 @@ const localStorageUtils =  {
                    itemIndex =  index;
                }
             });
+
            return itemIndex;
+
         },
 
         //localStorage增加对象
@@ -73,7 +74,7 @@ const localStorageUtils =  {
             if(this.DATA.length > 1) {
               length = this.DATA.length;
             }
-            data.id = (length + 1).toString();
+            data.id = (length).toString();
             this.DATA.push(data);
             this.update();
         },

@@ -72,13 +72,16 @@
 
     //opts是父级传递的参数
     this.items = opts.items;
+    this.items = this.items.filter(function(value) {
+        return !value.done
+    });
     this.types = opts.types;
 
-    this.todoStatus = false;
     var that = this;
 
     this.on('mount', function() {
         //获取chrome桌面通知权限
+
 
         if(Notification && Notification !== 'granted') {
             Notification.requestPermission(function(status){
@@ -205,8 +208,11 @@
     //增加代办事项
     add(e)
     {
+
         if (this.text) {
-            localStorageUtils.methods.addItem({title: this.text, createTime: new Date().getTime(), type: this.type, done: false});
+            var item = {title: this.text, createTime: new Date().getTime(), type: this.type, done: false};
+            this.items.push(item);
+            localStorageUtils.methods.addItem(item);
             this.text = this.refs.input.value = '';
         }
         e.preventDefault();
@@ -241,7 +247,9 @@
     deleteTodo(event)
     {
         var item = event.item;
-        localStorageUtils.methods.deleteItem(item.id);
+        var index = localStorageUtils.methods.getIndex(item.id);
+        this.items.splice(index, 1);
+        localStorageUtils.methods.deleteItem(index);
     }
 
     //是否完成
