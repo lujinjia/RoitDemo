@@ -7,6 +7,14 @@
 
     <link rel="stylesheet" href="todo.css">
     <link rel="stylesheet" href="index.css">
+    <style type="text/css">
+        .icon {
+            width: 1em; height: 1em;
+            vertical-align: -0.15em;
+            fill: currentColor;
+            overflow: hidden;
+        }
+    </style>
     <!--[if lt IE 9]>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/es5-shim/4.0.5/es5-shim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.2/html5shiv.min.js"></script>
@@ -15,8 +23,8 @@
 
 </head>
 
-<body style="background-image: url('https://img.infinitynewtab.com/randomBlur/3498.jpg'); color: #fff;">
-
+<body>
+<!--style="background-image: url('https://img.infinitynewtab.com/randomBlur/3498.jpg'); color: #fff;"-->
 <div class="bgOut">
     <todo></todo>
     <div class="changeBg">
@@ -29,25 +37,31 @@
 <script src="todo.tag" type="riot/tag"></script>
 <script src="./utils/localStorageUtil.js"></script>
 <script src="https://rawgit.com/riot/riot/master/riot+compiler.min.js"></script>
+<script src="./plugins/layDate-v5.0.5/laydate/laydate.js"></script>
+<script src="//at.alicdn.com/t/font_409974_u3khuh4q3vunmi.js"></script>
 
 <script>
 
-/*    var todoItems =  [
-            {"id": "1", "title": "项目一", "wishTime": "1504162055934", "type": "1", "actualTime": "1504182055999", "done": true},
-            {"id": '2', "title": '项目二', "wishTime": '1504162300491', "type": '0', "actualTime": '', "done": false},
-            {"id": '3', "title": '项目三', "wishTime": '1504162300491', "type": '0', "actualTime": '', "done": false},
-            {"id": '4', "title": '项目四', "wishTime": '1504162300491', "type": '2', "actualTime": '', "done": false},
-            {"id": '5', "title": '早上上班', "wishTime": '1504162300491', "type": '3', "actualTime": '', "hidden": true},
-            {"id": '6', "title": '晚上下班', "wishTime": '1504162300491', "type": '3', "actualTime": '', "hidden": true},
-            {"id": '7', "title": '中午吃饭', "wishTime": '1504162300491', "type": '3', "actualTime": '', "hidden": true},
-            {"id": '8', "title": '下午上班', "wishTime": '1504162300491', "type": '3', "actualTime": '', "hidden": true}
-        ];
+/*
+    var todoItems =  [
+            {"id": "0", "title": "项目一", "createTime": "1504162055934", "type": "1", "closeTime": "1504182055999", "done": true},
+    ];
+*/
 
-    window.localStorage.setItem('todoItems', JSON.stringify(todoItems));*/
+    var todoTypes = [
+        { "id" : "0", "title" : "待完成", isHover: true},
+        { "id" : "1", "title" : "已完成", isHover: false}
+    ];
+    /*localStorage.setItem('todoItems', JSON.stringify(todoItems));*/
+    localStorage.setItem('todoTypes', JSON.stringify(todoTypes));
+
+    var typeData = JSON.parse(localStorage.getItem('todoTypes'));
 
     var itemData = localStorageUtils.methods.init('todoItems');
+
     riot.mount('todo', {
-        items: itemData
+        items: itemData,
+        types: typeData
     });
 
 </script>

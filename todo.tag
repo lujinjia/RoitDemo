@@ -2,39 +2,64 @@
 
     <h3>{ getCurrentDate()} 待办事项</h3>
 
-    <form onsubmit={ add }>
+    <form>
         <select name="待办类型" id="todoType">
             <option value="0" selected >工作</option>
             <option value="1">生活</option>
             <option value="2">自我提高</option>
         </select>
-        <input ref="input" onkeyup={ edit }>
-        <input ref="time" type="time" blur={ editDate }>
-        <button disabled={ !text }>增加</button>
-        <button onclick={search}>搜索</button>
+        <input ref="input" onkeyup={ edit } onenter={ add }>
+        <button disabled={ !text } onclick={ add }>
+        <svg class="icon" aria-hidden="true">
+            <use xlink:href="#icon-add"></use>
+        </svg>
+        增加
+        </button>
+        <button onclick={ search }>
+            <svg class="icon" aria-hidden="true">
+                <use xlink:href="#icon-search_light"></use>
+            </svg>
+    搜索</button>
     </form>
 
     <button id="msgBtn" style="display: none;"></button>
 
     <div>
         <div>
-            <span><a onclick={showAll} href="#" class="todoItem">全部事项</a></span>
-            <span><a onclick={showUndo} href="#" class="todoItem">待办</a></span>
-            <span><a onclick={showDone} href="#" class="todoItem">已完成</a></span>
+            <li each={types} onclick={showType} class={ typeItemSelect: isHover, typeItem: true } >
+                { title }
+            </li>
+
         </div>
         <ul>
-            <li each={ items.filter(whatShow) }>
-                <div>类型：{filterType(type)}</div>
-                <label class={ completed: done }>
-                    <input type="checkbox" checked={ done } onclick={ parent.toggle }> { title }
-                    <button type="button" onclick={upTodo}>置顶</button>
-                    <button type="button" onclick={deleteTodo}>删除</button>
-                </label>
-                <div class={ completed: done } style="margin-left: 25px;">
-                    预计完成时间： { filterTime(wishTime) }
-                </div>
-                <div class={ completed: done } style="margin-left: 25px;">
-                    实际完成时间： { filterTime(actualTime) }
+            <li each={ items }>
+                <div class="todoItem">
+                    <label >
+                        <input type="checkbox" checked={ done } onclick={ toggle } hidden>
+                        <svg  aria-hidden="true" class={hide: done, icon: true}>
+                            <use xlink:href="#icon-weigouxuan"></use>
+                        </svg>
+                        <svg aria-hidden="true" class={hide: !done, icon: true}>
+                            <use xlink:href="#icon-yigouxuan"></use>
+                        </svg>
+                    </label>
+
+                    <span style="font-size: 12px; color: #ccc;">{filterType(type)} - </span>
+                    <span contenteditable="true" class={ completed: done, todoTitle: true }  onblur={ editTodo }>
+                        { title }
+                    </span>
+
+                    <span style="cursor: pointer;">
+                        <svg class="icon" aria-hidden="true" onclick={upTodo}>
+                            <use xlink:href="#icon-top"></use>
+                        </svg>
+                    </span>
+
+                    <span style="cursor: pointer;">
+                        <svg class="icon" aria-hidden="true" onclick={deleteTodo}>
+                            <use xlink:href="#icon-move"></use>
+                        </svg>
+                    </span>
                 </div>
 
             </li>
@@ -47,6 +72,8 @@
 
     //opts是父级传递的参数
     this.items = opts.items;
+    this.types = opts.types;
+
     this.todoStatus = false;
     var that = this;
 
@@ -87,19 +114,6 @@
                 }
             }
         });
-
-        //每隔10秒检测是否有任务即将结束，如果是，则发送桌面通知
-        setInterval(function(){
-
-            //待办事项提醒
-            that.items.map(function(item){
-                if((item.wishTime - new Date().getTime()< 1800000) && !(item.hasCheck)) {
-                    that.todoItem = item;
-                    document.getElementById('msgBtn').click();
-                }
-            });
-
-        }, 5000)
     });
 
 
@@ -116,27 +130,27 @@
         return time;
     }
 
-    showAll()
-    {
-        this.items = opts.items;
-    }
-
     //已完成、未完成、全部事项标签显示控制
-    showUndo()
+    showType(e)
     {
+        var item = e.item;
+        var type = item.id;
         this.items = opts.items;
-        this.items = this.items.filter(function(value){
-            return !(value.done);
+        if(type === '1') {
+            this.items = this.items.filter(function(value) {
+                return value.done;
+            });
+        } else {
+            this.items = this.items.filter(function(value) {
+                return !value.done
+            });
+        }
+        opts.types.map(function(value) {
+            value.isHover = false;
         });
+        item.isHover = true;
     }
 
-    showDone()
-    {
-        this.items = opts.items;
-        this.items = this.items.filter(function(value){
-            return value.done;
-        });
-    }
 
     filterType(type)
     {
@@ -153,14 +167,32 @@
     //置顶待办事项
     upTodo(event)
     {
+
+
+        var itemIndex;
         var item = event.item;
-        var that = this;
-        this.items.map(function (data, index) {
-            if (data.id === item.id) {
-                that.items.splice(index, 1);
-                that.items.unshift(item);
+        var itemTypes = this.items.map((data, index)=> {
+           if(data.type === item.type) {
+                this.items.splice(index, 1, item);
             }
         });
+
+       itemTypes.map((data, index)=>{
+        if (data.id === item.id) {
+            itemTypes.splice(index, 1);
+            itemTypes.unshift(item);
+        }
+       });
+
+        localStorageUtils.methods.updateType(item.type, itemTypes);
+    }
+
+    //修改待办事项
+    editTodo(event) {
+        var text = event.target.innerText.trim();
+        var item = event.item;
+        item.title = text;
+        localStorageUtils.methods.setItem(item.key, item);
     }
 
     //输入框响应事件
@@ -170,26 +202,16 @@
         this.type = document.getElementById('todoType').value;
     }
 
-    editDate(e)
-    {
-
-        debugger
-        this.time = e.target.value;
-    }
-
     //增加代办事项
     add(e)
     {
         if (this.text) {
-            if(!this.time) {
-                this.time = new Date().getTime() + 3600000;
-            }
-            localStorageUtils.methods.addItem({title: this.text, wishTime: this.time, type: this.type});
+            localStorageUtils.methods.addItem({title: this.text, createTime: new Date().getTime(), type: this.type, done: false});
             this.text = this.refs.input.value = '';
-            this.time = this.refs.time.value = '';
         }
         e.preventDefault();
     }
+
     search(event)
     {
         if(this.text) {
@@ -222,12 +244,6 @@
         localStorageUtils.methods.deleteItem(item.id);
     }
 
-    //过滤是否显示
-    whatShow(item)
-    {
-        return !item.hidden
-    }
-
     //是否完成
     onlyDone(item)
     {
@@ -239,10 +255,15 @@
     {
         var item = e.item;
         if (item.done) {
-            item.actualTime = new Date().getTime();
+            item.closeTime = new Date().getTime();
         }
-
-        item.done = !item.done
+        item.done = !item.done;
+        this.items.map(function(value) {
+            if(value.id === item.id) {
+                value = item;
+            }
+        });
+        localStorageUtils.methods.setItem(item.key, item);
         return true
     }
 

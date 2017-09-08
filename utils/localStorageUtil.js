@@ -12,7 +12,7 @@ const localStorageUtils =  {
 
         init(key) {
             var data = JSON.parse(localStorage.getItem(key));
-            if(data.length) {
+            if(data && data.length) {
                 this.DATA = data;
             } else {
                 this.DATA = [];
@@ -40,10 +40,30 @@ const localStorageUtils =  {
             this.update();
         },
 
+        updateType(type, items) {
+            this.DATA.map((item)=>{
+
+            });
+        },
+
         //根据key删除值
         deleteItem(key) {
-            this.DATA.splice(key-1, 1);
+
+            var index = this.getIndex(key);
+            this.DATA.splice(index-1, 1);
             this.update();
+
+        },
+
+        getIndex(key) {
+            var itemIndex;
+
+           this.DATA.map((data, index)=>{
+               if(data.id === key) {
+                   itemIndex =  index;
+               }
+            });
+           return itemIndex;
         },
 
         //localStorage增加对象

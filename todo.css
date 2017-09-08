@@ -7,19 +7,37 @@ body {
 
 todo {
   display: block;
-  max-width: 500px;
+  max-width: 700px;
   margin: 5% auto;
 }
 
 .todoContent {
   /*background: #bbe5a4;*/
   display: block;
-  max-width: 500px;
+  max-width: 700px;
   margin: 5% auto;
 }
 
 .todoItem {
-  color: rgb(46, 204, 113);
+  margin-top: 10px;
+  padding: 10px;
+  font-size: 20px;
+}
+
+.todoTitle {
+  display: inline-block;
+  padding: 5px 15px;
+}
+
+.typeItem {
+  display: inline-block;
+  margin-right: 20px;
+  cursor: pointer;
+  color: #495060;
+}
+
+.typeItemSelect {
+  color: #2d8cf0;
 }
 
 form select {
@@ -58,6 +76,10 @@ button {
   outline: none;
 }
 
+.hide {
+  display: none;
+}
+
 button[disabled] {
   background-color: #ddd;
   color: #aaa;
@@ -88,3 +110,4 @@ li {
 label {
   cursor: pointer;
 }
+
